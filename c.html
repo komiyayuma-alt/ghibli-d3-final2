@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>C：最終｜探索ダッシュボード</title>
+
+  <link rel="stylesheet" href="./css/style.css" />
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+
+  <style>
+    #dash { width: 100%; }
+    .row { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 18px; }
+    @media (max-width: 960px){ .row{ grid-template-columns: 1fr; } }
+
+    .panel {
+      padding: 14px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.12);
+    }
+
+    .ctrl { display: grid; gap: 10px; margin-top: 10px; }
+    label { font-size: 12px; opacity: .85; display:block; margin-bottom: 4px; }
+    select, input[type="range"], input[type="text"] { width: 100%; }
+
+    .btnRow { display:flex; gap:10px; margin-top: 6px; flex-wrap: wrap; }
+    button {
+      appearance: none;
+      border: 1px solid rgba(255,255,255,.18);
+      background: rgba(255,255,255,.06);
+      color: rgba(255,255,255,.9);
+      padding: 8px 10px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    button:hover { background: rgba(255,255,255,.10); }
+
+    table { width:100%; border-collapse: collapse; font-size: 12px; }
+    th, td { padding: 8px 6px; border-bottom: 1px solid rgba(255,255,255,.08); text-align: left; }
+    .hint { font-size: 12px; opacity: .7; margin-top: 6px; }
+    .err { padding:12px; border:1px solid rgba(255,255,255,.2); border-radius:12px; }
+
+    .tooltip {
+      position: fixed;
+      pointer-events: none;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: rgba(0,0,0,0.75);
+      color: #fff;
+      font-size: 12px;
+      line-height: 1.35;
+      max-width: 280px;
+      z-index: 9999;
+      display: none;
+      backdrop-filter: blur(6px);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="header">
+      <div>
+        <h1>C：最終（探索用ダッシュボード）</h1>
+        <div class="subtitle">
+          指標切替・監督フィルタ・公開年レンジ・検索・brushで、データの見え方を探索する。
+        </div>
+      </div>
+      <nav class="nav">
+        <a href="./index.html">Top</a>
+        <a href="./a.html">A：静的</a>
+        <a href="./b.html">B：動的</a>
+      </nav>
+    </div>
+
+    <div class="row">
+      <div class="panel">
+        <h2>操作</h2>
+
+        <div class="ctrl">
+          <div>
+            <label>X軸</label>
+            <select id="xSelect">
+              <option value="runtime">上映時間（分）</option>
+              <option value="year">公開年</option>
+              <option value="gross">興行収入（Gross）</option>
+              <option value="rating">評価（Rating）</option>
+            </select>
+          </div>
+
+          <div>
+            <label>監督フィルタ</label>
+            <select id="directorSelect">
+              <option value="__all__">すべて</option>
+            </select>
+          </div>
+
+          <div>
+            <label>タイトル検索（部分一致）</label>
+            <input id="q" type="text" placeholder="例：Totoro / 千と千尋 / Castle ..." />
+          </div>
+
+          <div>
+            <label>公開年（最小）: <span id="minYearLabel"></span></label>
+            <input id="minYear" type="range" min="1980" max="2025" step="1" value="1980" />
+          </div>
+
+          <div>
+            <label>公開年（最大）: <span id="maxYearLabel"></span></label>
+            <input id="maxYear" type="range" min="1980" max="2025" step="1" value="2025" />
+          </div>
+
+          <div class="btnRow">
+            <button id="clearBrush" type="button">brush解除</button>
+            <button id="resetAll" type="button">フィルタ全リセット</button>
+          </div>
+        </div>
+
+        <div class="hint">
+          操作：散布図上をドラッグ→範囲選択（brush）／点にマウス→詳細表示
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>選択した作品の一覧</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Title</th><th>Year</th><th>Director</th><th>Rating</th><th>Runtime</th><th>Gross</th>
+            </tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+        <div class="hint">最大30件表示。brushが無いときはフィルタ後の上位（Rating高い順）。</div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:18px;">
+      <h2>散布図（Y軸：評価固定）</h2>
+      <div id="dash"></div>
+    </div>
+
+    <div id="tooltip" class="tooltip"></div>
+  </div>
+
+  <script src="./js/c_dashboard.js"></script>
+</body>
+</html>
+
